@@ -1,0 +1,120 @@
+```markdown
+# Project: Bitcoin University – Web3 R&D Marketplace
+
+## Mission
+Build a **Research‑Institution‑as‑a‑Service** dApp where scientists, funders, and students collaborate.  
+**Platform‑level bridge fee is capped at 1 %.**
+
+---
+
+### 1. Tech Stack
+- **Frontend**: React + Vite + TailwindCSS  
+- **Smart Contracts**: Solidity (>=0.8.20) using **Thirdweb** contracts & SDK  
+- **Routing / State**: React Router v6, Zustand  
+- **Wallet**: Thirdweb Connect  
+- **Storage**: IPFS via Thirdweb or Pinata  
+- **Lint / Format**: ESLint, Prettier, Husky
+
+---
+
+### 2. File / Folder Blueprint
+```
+
+/
+├── contracts/
+│   └── BUFeeRouter.sol          # 1 % fee enforcement
+├── src/
+│   ├── pages/
+│   │   ├── Home.jsx            # Landing page
+│   │   ├── ResearchPrograms.jsx
+│   │   ├── ResearchFunding.jsx
+│   │   ├── CourseOfferings.jsx
+│   │   ├── ResearchFacilities.jsx
+│   │   ├── NatureReserve.jsx
+│   │   ├── Campuses.jsx
+│   │   └── Publications.jsx
+│   ├── components/
+│   │   ├── Navbar.jsx          # logo + links
+│   │   ├── Hero.jsx
+│   │   └── Footer.jsx
+│   ├── hooks/                  # Web3 + state hooks
+│   └── App.jsx
+├── .env.example                # THIRDWEB\_SECRET\_KEY, VITE\_\* keys
+└── README.md
+
+````
+
+---
+
+### 3. Smart‑Contract Specs (`BUFeeRouter.sol`)
+1. **Immutable fee**: `uint256 public constant FEE_BPS = 100;`  // 100 bps = 1 %  
+2. `processPayment(address payable target)`  
+   - `uint256 fee = msg.value * FEE_BPS / 10_000;`  
+   - Forward `msg.value - fee` to `target`; retain fee in contract.  
+3. **Owner = DAO multisig** with `withdrawFees()` gated by `onlyOwner`.  
+4. Write **hardhat tests** for:
+   - Correct fee maths (edge cases: 0 & max uint).  
+   - Reverts if zero address.  
+5. Deploy to **Sepolia**; export address to `.env`.
+
+---
+
+### 4. Front‑End Requirements
+- **Navigation Bar**  
+  - Logo + “Bitcoin University”  
+  - Links → Home, Programs, Funding, Courses, Facilities, Nature Reserve, Campuses, Publications  
+  - Mobile hamburger
+- **Hero Section**  
+  - Full‑width background image (futuristic research vibe, orange overlay)  
+  - Tagline + “Explore Programs” CTA → `/ResearchPrograms`
+- **Theme**  
+  - Primary: **#F7931A** (Bitcoin orange)  
+  - Secondary: charcoal gray `#222` & white  
+  - Accessible contrast (WCAG AA)  
+- **Wallet Connect** button top‑right (Thirdweb)  
+- **Fee Disclosure Banner**: “Platform bridge fee: 1 %” fixed at footer.
+
+---
+
+### 5. Dev Scripts
+```json
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "lint": "eslint . --ext .js,.jsx",
+  "test": "hardhat test"
+}
+````
+
+---
+
+### 6. Quick Start Tasks for Replit AI
+
+1. Initialize **npm**, install React, Vite, Tailwind, Thirdweb, Hardhat.
+2. Scaffold folder tree above.
+3. Generate `BUFeeRouter.sol` with 1 % logic + tests.
+4. Create responsive Navbar, Hero, routed pages with placeholder copy.
+5. Wire Thirdweb provider (`<ThirdwebProvider activeChain="sepolia">`).
+6. Add `.env.example`.
+7. Update README with deploy & run steps.
+
+---
+
+### 7. Stretch Goals (leave TODO comments)
+
+* Dynamic funding dashboard pulling on‑chain grant data.
+* IP‑NFT mint flow hooked to router fee.
+* Unit tests in React Testing Library for Navbar & Hero.
+
+---
+
+### Definition of “Done”
+
+* `npm run dev` serves fully navigable site, wallet connects, fee banner visible.
+* `npx hardhat test` passes all contract tests.
+* Pushing to Replit triggers build without errors.
+
+*Remember: all platform service bridges must route through `BUFeeRouter` so only 1 % is skimmed. Keep code clean, documented, and production‑ready.*
+
+```

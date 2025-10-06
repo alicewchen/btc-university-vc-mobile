@@ -1,0 +1,119 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/runner/workspace/contracts/SimpleBUFeeRouter.sol": {
+      "lastModificationDate": 1754858593893,
+      "contentHash": "910bb36e10c4cf9ff421cac83e71a694",
+      "sourceName": "SimpleBUFeeRouter.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SimpleBUFeeRouter"
+      ]
+    },
+    "/home/runner/workspace/contracts/SimpleDAOFactory.sol": {
+      "lastModificationDate": 1754858680910,
+      "contentHash": "9abb7e9fdc9622cac52108f09f6b3bd8",
+      "sourceName": "SimpleDAOFactory.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./SimpleResearchDAO.sol",
+        "./SimpleBUFeeRouter.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SimpleDAOFactory"
+      ]
+    },
+    "/home/runner/workspace/contracts/SimpleResearchDAO.sol": {
+      "lastModificationDate": 1754858701964,
+      "contentHash": "a85d33f6c7a37c1bb2e357c3abd834cb",
+      "sourceName": "SimpleResearchDAO.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SimpleResearchDAO"
+      ]
+    }
+  }
+}
