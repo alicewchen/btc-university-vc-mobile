@@ -194,9 +194,11 @@ export async function processShoppingCartBatch(cartItems: any[]) {
 
 // Encode investment data for smart contract
 function encodeInvestmentData(item: any): string {
-  // This would encode the function call data for the investment
-  // In a real implementation, this would use ethers.js or viem to encode
-  return "0x"; // Placeholder
+  // TODO: Replace with real function encoding using ethers.js or viem
+  // This is a placeholder implementation
+  // Production: Use ethers.Interface.encodeFunctionData or viem's encodeFunctionData
+  // to properly encode the contract function call with parameters
+  return "0x"; // PLACEHOLDER
 }
 
 // Deploy investment tracking contract

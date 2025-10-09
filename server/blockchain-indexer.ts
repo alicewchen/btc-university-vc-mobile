@@ -51,9 +51,18 @@ export class BlockchainIndexer {
       console.log('📊 Starting indexing from block:', this.currentBlock);
       
       return true;
-    } catch (error) {
-      console.error('❌ Failed to initialize blockchain indexer:', error);
-      return false;
+    } catch (error: any) {
+      // Check if this is a connection refused error (node not running)
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('ECONNREFUSED')) {
+        // Expected case: local node not running - gracefully handle
+        console.log('⚠️  Blockchain indexer not available (local node not running at', this.rpcUrl + ')');
+        console.log('💡 Tip: Start Hardhat node with: cd contracts && npx hardhat node');
+        return false;
+      } else {
+        // Unexpected error (invalid RPC URL, auth failure, etc.) - fail fast
+        console.error('❌ Critical error initializing blockchain indexer:', error);
+        throw error; // Re-throw to surface configuration/runtime issues
+      }
     }
   }
 
@@ -346,17 +355,26 @@ export class BlockchainIndexer {
 // Export singleton instance
 export const blockchainIndexer = new BlockchainIndexer();
 
-// Auto-start indexing in development
+// Auto-start indexing in development  
 if (process.env.NODE_ENV === 'development') {
   // Initialize with a small delay to let the server start
-  setTimeout(async () => {
-    try {
-      const initialized = await blockchainIndexer.initialize();
-      if (initialized) {
-        await blockchainIndexer.startIndexing(10000); // Check every 10 seconds
+  setTimeout(() => {
+    (async () => {
+      try {
+        const initialized = await blockchainIndexer.initialize();
+        if (initialized) {
+          await blockchainIndexer.startIndexing(10000); // Check every 10 seconds
+        } else {
+          // False return = graceful handling of expected "node not running" case
+          console.log('ℹ️  App running without blockchain indexing (local node not required)');
+        }
+      } catch (error: any) {
+        // Critical initialization error (not just missing node) - fail fast
+        console.error('❌ FATAL: Blockchain indexer configuration error:', error.message);
+        console.error('   Server cannot start with invalid blockchain configuration');
+        console.error('   Fix the RPC URL or disable blockchain indexing');
+        process.exit(1); // Exit process on critical configuration errors
       }
-    } catch (error) {
-      console.log('⚠️  Blockchain indexer failed to start (blockchain node may not be running)');
-    }
+    })();
   }, 5000);
 }

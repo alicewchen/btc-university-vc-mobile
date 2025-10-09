@@ -69,13 +69,7 @@ export function Web3Provider({ children }: Web3ProviderProps) {
 
   // Check if wallets are available
   const isMetaMaskAvailable = () => {
-    const available = typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
-    console.log('MetaMask availability check:', {
-      windowUndefined: typeof window === 'undefined',
-      ethereumUndefined: typeof window.ethereum === 'undefined',
-      available
-    });
-    return available;
+    return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
   };
 
   const isPhantomAvailable = () => {
@@ -128,44 +122,27 @@ export function Web3Provider({ children }: Web3ProviderProps) {
 
   // Connect to MetaMask
   const connectMetaMask = async () => {
-    console.log('Starting MetaMask connection...');
-    
     if (!isMetaMaskAvailable()) {
-      const error = 'MetaMask is not installed. Please install MetaMask browser extension.';
-      console.error(error);
-      throw new Error(error);
+      throw new Error('MetaMask is not installed. Please install MetaMask browser extension.');
     }
 
     try {
-      console.log('Requesting MetaMask accounts...');
-      
       // Request account access
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       });
-
-      console.log('MetaMask accounts received:', accounts);
 
       if (accounts.length === 0) {
         throw new Error('No accounts found. Please make sure MetaMask is unlocked.');
       }
 
       // Get chain ID
-      console.log('Getting chain ID...');
       const chainId = await window.ethereum.request({
         method: 'eth_chainId'
       });
 
-      console.log('Chain ID received:', chainId);
-
       const parsedChainId = parseInt(chainId, 16);
       const networkName = SUPPORTED_CHAINS[parsedChainId as keyof typeof SUPPORTED_CHAINS]?.name || `Chain ${parsedChainId}`;
-
-      console.log('Setting state with:', {
-        address: accounts[0],
-        chainId: parsedChainId,
-        networkName
-      });
 
       setState(prev => ({
         ...prev,
@@ -181,14 +158,11 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       const web3Provider = new BrowserProvider(window.ethereum);
       setProvider(web3Provider);
       setContractService(new ContractService(web3Provider, parsedChainId));
-
-      console.log('MetaMask connection successful, getting balance...');
       
       // Get balance after a short delay to ensure state is updated
       setTimeout(async () => {
         try {
           await getBalance();
-          console.log('Balance fetched successfully');
         } catch (balanceError) {
           console.error('Error fetching balance:', balanceError);
         }
@@ -336,7 +310,6 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       if (import.meta.env.MODE === 'development') {
         localStorage.removeItem('test-wallet-address');
         localStorage.removeItem('test-user-data');
-        console.log('🧪 Test wallet cleared');
       }
 
       // Disconnect Solana wallets

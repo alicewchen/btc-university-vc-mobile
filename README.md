@@ -1,1 +1,0 @@
-# btc-university-vc-mobile

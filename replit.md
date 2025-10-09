@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Web Frontend Architecture
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
 - **Routing**: Wouter
@@ -19,11 +19,56 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: TanStack Query for server state, Zustand for local state
 - **Icons**: Lucide React
 
-### Backend Architecture
+### Mobile App Architecture
+- **Framework**: React Native with TypeScript via Expo SDK 52
+- **Platform**: iOS, Android, and Web (cross-platform)
+- **Navigation**: React Navigation v7 (Stack + Bottom Tabs)
+- **UI Framework**: React Native Paper with custom theming
+- **State Management**: TanStack Query for server state
+- **API Client**: Shared Express backend via REST API
+- **Web3**: WalletConnect for mobile wallet integration (planned)
+- **Location**: Separate standalone app in `mobile/` directory
+
+### Mobile App Configuration
+
+#### Environment Setup (Required for Physical Devices)
+The mobile app requires the `EXPO_PUBLIC_API_URL` environment variable to connect to the backend:
+
+1. **Create `.env` file** in the `mobile/` directory:
+   ```bash
+   cd mobile
+   cp .env.example .env
+   ```
+
+2. **Set the API URL** based on your environment:
+   - **Replit Development**: Use your Replit dev URL
+     ```
+     EXPO_PUBLIC_API_URL=https://your-project-name.replit.dev
+     ```
+   - **Local Network**: Use your machine's IP address
+     ```
+     EXPO_PUBLIC_API_URL=http://192.168.1.100:5000
+     ```
+
+3. **Development Modes**:
+   - **Expo Go**: Auto-detects host IP (no env var required)
+   - **Dev-Client/Physical Devices**: REQUIRES `EXPO_PUBLIC_API_URL` (enforced at runtime)
+
+4. **Production Deployment**:
+   - Set `EXPO_PUBLIC_API_URL` in EAS Build secrets or CI/CD environment
+   - Example: `eas secret:create --name EXPO_PUBLIC_API_URL --value https://api.yourapp.com`
+
+#### Runtime Behavior
+- Throws clear error at startup if `EXPO_PUBLIC_API_URL` is missing outside Expo Go
+- Prevents silent networking failures on physical devices
+- Logs which API URL detection method was used for debugging
+
+### Backend Architecture (Shared)
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect
 - **Development Server**: Custom Vite integration for SSR-like development
+- **CORS**: Configured to accept requests from both web and mobile apps
 
 ### Data Storage
 - **Primary Database**: PostgreSQL via Neon Database
@@ -71,9 +116,18 @@ Preferred communication style: Simple, everyday language.
 - **Member Management**: Join DAOs and track participation
 - **Fee Collection**: Platform fee system for sustainability
 
-## Recent Changes (August 2025)
+## Recent Changes (October 2025)
 
-### Smart Contract Integration Completed
+### Mobile App Implementation Completed
+- ✅ **React Native mobile app**: Separate Expo app in `mobile/` directory
+- ✅ **Cross-platform support**: iOS, Android, and Web via Expo SDK 52
+- ✅ **Navigation system**: React Navigation v7 with bottom tabs (Home, Explore, Create, Wallet)
+- ✅ **API integration**: Shared Express backend with TanStack Query
+- ✅ **Environment-based configuration**: EXPO_PUBLIC_API_URL with runtime validation
+- ✅ **Core screens implemented**: Browse DAOs, DAO details, Create DAO, Wallet placeholder
+- ✅ **Production-ready**: Fail-fast validation prevents API misconfiguration
+
+### Smart Contract Integration Completed (August 2025)
 - ✅ **Full smart contract system implemented**: ResearchDAO.sol, DAOFactory.sol, BUFeeRouter.sol
 - ✅ **Simplified contracts for testing**: SimpleBUFeeRouter.sol, SimpleDAOFactory.sol, SimpleResearchDAO.sol 
 - ✅ **Hardhat development environment**: Configured with deployment scripts and local node

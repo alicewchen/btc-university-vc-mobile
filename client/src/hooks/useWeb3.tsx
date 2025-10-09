@@ -40,10 +40,11 @@ export function useWeb3() {
 
   const connectWallet = async () => {
     try {
-      // In production, this would use Thirdweb SDK
-      console.log('Connecting wallet via Thirdweb...');
+      // TODO: Replace with real Thirdweb SDK wallet connection
+      // This is currently a mock implementation for development
+      // Production implementation should use: import { ConnectWallet } from "thirdweb/react"
       
-      // Simulate wallet connection with realistic data
+      // MOCK: Simulate wallet connection with realistic data
       const mockAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
       const mockBalance = (Math.random() * 10).toFixed(4);
       
@@ -81,7 +82,10 @@ export function useWeb3() {
   };
 
   const uploadToIPFS = async (file: File): Promise<string> => {
-    // In production, this would upload to IPFS via Thirdweb or Pinata
+    // TODO: Replace with real IPFS upload using Thirdweb Storage or Pinata
+    // This is currently a mock implementation that returns a fake IPFS hash
+    // Production implementation: Use thirdweb's StorageUpload or Pinata SDK
+    
     return new Promise((resolve) => {
       setTimeout(() => {
         const mockHash = `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
@@ -98,20 +102,20 @@ export function useWeb3() {
     setIsTransacting(true);
 
     try {
-      // In production, this would interact with the smart contracts
-      console.log('Minting IP-NFT with params:', params);
-      console.log('Processing through BUFeeRouter...');
-
-      // Simulate transaction processing
+      // TODO: Replace with real smart contract interaction
+      // This is currently a mock implementation that simulates minting
+      // Production implementation should:
+      // 1. Use thirdweb SDK to prepare contract transaction
+      // 2. Process through BUFeeRouter for platform fee
+      // 3. Call IPNFT contract's mint function
+      // 4. Return real transaction hash and token ID
+      
+      // MOCK: Simulate transaction processing
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Generate mock transaction hash and token ID
+      // MOCK: Generate fake transaction hash and token ID
       const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
       const tokenId = Math.floor(Math.random() * 10000).toString();
-
-      console.log('IP-NFT minted successfully!');
-      console.log('Transaction Hash:', txHash);
-      console.log('Token ID:', tokenId);
 
       return tokenId;
     } catch (error) {

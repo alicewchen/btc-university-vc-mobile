@@ -76,9 +76,10 @@ export class BatchTransactionBuilder {
   }
 
   private encodeFunction(method: string, params: any[]): string {
-    // This would encode the function call
-    // In production, use thirdweb SDK's encoding utilities
-    return "0x" + method; // Placeholder
+    // TODO: Replace with real function encoding using thirdweb SDK
+    // This is a placeholder implementation
+    // Production: Use thirdweb's prepareContractCall or encodeFunctionData
+    return "0x" + method; // PLACEHOLDER
   }
 
   build() {
@@ -100,9 +101,10 @@ export class InvestmentContract {
 
   // Read investor portfolio from blockchain
   async getInvestorPortfolio(investorAddress: string) {
-    // In production, use thirdweb SDK to read contract
+    // TODO: Replace with real contract read using thirdweb SDK
+    // Production: Use thirdweb's readContract to fetch actual portfolio data
     try {
-      // Placeholder for contract read
+      // PLACEHOLDER: Returns mock data
       return {
         totalInvested: "0",
         investmentCount: 0,
