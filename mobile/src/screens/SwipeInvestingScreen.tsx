@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, PanResponder, StyleSheet, View } from 'react-native';
+import { Animated, Dimensions, Easing, PanResponder, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   ActivityIndicator,
@@ -161,59 +161,92 @@ export default function SwipeInvestingScreen() {
   const [selectedAmount, setSelectedAmount] = useState<string>('');
 
   const pan = useRef(new Animated.ValueXY()).current;
+  const cardScale = useRef(new Animated.Value(1)).current;
+  const horizontalSwipeThreshold = SCREEN_WIDTH * 0.25;
+  const verticalSwipeThreshold = SCREEN_WIDTH * 0.2;
+  const velocityThreshold = 1.6;
+
+  const resetCardPosition = () => {
+    Animated.parallel([
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        friction: 8,
+        tension: 50,
+        useNativeDriver: true,
+      }),
+      Animated.spring(cardScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 120,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        Animated.spring(cardScale, {
+          toValue: 0.97,
+          friction: 7,
+          tension: 120,
+          useNativeDriver: true,
+        }).start();
+      },
       onPanResponderMove: Animated.event(
         [null, { dx: pan.x, dy: pan.y }],
         { useNativeDriver: false },
       ),
       onPanResponderRelease: (_, gestureState) => {
-        const { dx, dy } = gestureState;
-        const threshold = 120;
+        const { dx, dy, vx, vy } = gestureState;
 
-        if (dx > threshold) {
-          animateOffScreen({ x: SCREEN_WIDTH, y: 0 }, () => {
+        if (dx > horizontalSwipeThreshold || vx > velocityThreshold) {
+          animateOffScreen({ x: SCREEN_WIDTH * 1.2, y: 0 }, () => {
             handleRightSwipe(currentOpportunity);
           });
           return;
         }
 
-        if (dx < -threshold) {
-          animateOffScreen({ x: -SCREEN_WIDTH, y: 0 }, () => {
+        if (dx < -horizontalSwipeThreshold || vx < -velocityThreshold) {
+          animateOffScreen({ x: -SCREEN_WIDTH * 1.2, y: 0 }, () => {
             handleLeftSwipe();
           });
           return;
         }
 
-        if (dy < -threshold) {
+        if (dy < -verticalSwipeThreshold || vy < -velocityThreshold) {
           animateOffScreen({ x: 0, y: -SCREEN_WIDTH }, () => {
             handleUpSwipe(currentOpportunity);
           });
           return;
         }
 
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-        }).start();
+        resetCardPosition();
       },
       onPanResponderTerminate: () => {
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-        }).start();
+        resetCardPosition();
       },
     }),
   ).current;
 
   const animateOffScreen = (toValue: { x: number; y: number }, onComplete: () => void) => {
-    Animated.timing(pan, {
-      toValue,
-      duration: 220,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(pan, {
+        toValue,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(cardScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 120,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       pan.setValue({ x: 0, y: 0 });
+      cardScale.setValue(1);
       onComplete();
     });
   };
@@ -538,7 +571,12 @@ export default function SwipeInvestingScreen() {
           style={[
             styles.cardWrapper,
             {
-              transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate: cardRotation }],
+              transform: [
+                { translateX: pan.x },
+                { translateY: pan.y },
+                { rotate: cardRotation },
+                { scale: cardScale },
+              ],
               opacity: cardOpacity,
             },
           ]}
