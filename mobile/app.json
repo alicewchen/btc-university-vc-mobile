@@ -21,10 +21,19 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bitcoinuniversity"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "023dc804-83f8-4613-956c-8d2e5f1a32b5"
+      }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }
