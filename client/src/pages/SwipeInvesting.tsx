@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useActiveAccount } from "thirdweb/react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,11 +71,71 @@ interface InvestorPreferences {
   quickFundRange: string;
 }
 
+const ENABLE_INVESTMENT_MOCKS =
+  import.meta.env.DEV && import.meta.env["VITE_ENABLE_INVESTMENT_MOCKS"] !== "false";
+
+const MOCK_INVESTOR_PREFERENCES: InvestorPreferences = {
+  preferredAmounts: ["250", "500", "1000", "2500"],
+  defaultAmount: "250",
+  preferredCurrency: "USD",
+  quickFundRange: "professional_investor",
+};
+
+const MOCK_OPPORTUNITIES: InvestmentOpportunity[] = [
+  {
+    id: "mock-dao-1",
+    type: "dao",
+    title: "Solar Commons Research Collective",
+    description:
+      "Scaling community-owned solar grids to power rural universities across Latin America.",
+    fundingGoal: 500000,
+    fundingRaised: 175000,
+    category: "Clean Energy",
+    impact:
+      "Deploy 12 microgrid pilots delivering reliable power to 40,000 students while generating open data sets.",
+    timeline: "Phase 1 deployment complete; expansion ready for Q2 2025.",
+    urgency: "high",
+    memberCount: 48,
+    location: "Latin America",
+  },
+  {
+    id: "mock-grant-1",
+    type: "grant",
+    title: "Bitcoin University AI Research Fellows",
+    description:
+      "12-month fellowship funding AI researchers tackling decentralized learning and privacy.",
+    fundingGoal: 350000,
+    fundingRaised: 82000,
+    category: "AI Research",
+    impact:
+      "Fund five fellows to produce open-source tooling for decentralized education and grant a public dataset.",
+    deadline: "Applications close March 30, 2025",
+    urgency: "medium",
+    location: "Global",
+  },
+  {
+    id: "mock-scholarship-1",
+    type: "scholarship",
+    title: "Women in Bitcoin Engineering Scholarships",
+    description:
+      "Scholarships for emerging women engineers building Bitcoin infrastructure and developer tooling.",
+    fundingGoal: 150000,
+    fundingRaised: 94000,
+    category: "Scholarship",
+    impact:
+      "Support 25 scholars with stipends, mentorship, and placements in partner Bitcoin labs.",
+    timeline: "Program kickoff July 2025; mentorship runs for 9 months.",
+    urgency: "urgent",
+    location: "North America & Europe",
+  },
+];
+
 export default function SwipeInvesting() {
   const account = useActiveAccount();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { addItem } = useShoppingCart();
+  const inDemoMode = !account?.address && ENABLE_INVESTMENT_MOCKS;
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAmountModal, setShowAmountModal] = useState(false);
@@ -89,8 +149,14 @@ export default function SwipeInvesting() {
   const startPos = useRef({ x: 0, y: 0 });
   const currentPos = useRef({ x: 0, y: 0 });
 
+  const resolveCurrencySymbol = (currency?: string) => {
+    if (currency === "ETH") return "Ξ";
+    if (currency === "BTC") return "₿";
+    return "$";
+  };
+
   // Fetch investor preferences
-  const { data: preferences } = useQuery({
+  const { data: fetchedPreferences } = useQuery({
     queryKey: ["/api/investor-preferences", account?.address],
     queryFn: async (): Promise<InvestorPreferences> => {
       if (!account?.address) throw new Error("Wallet not connected");
@@ -98,13 +164,52 @@ export default function SwipeInvesting() {
       if (!response.ok) throw new Error("Preferences not found");
       return response.json();
     },
-    enabled: !!account?.address
+    enabled: !!account?.address,
+    retry: false,
   });
 
+  const preferences =
+    fetchedPreferences ??
+    (ENABLE_INVESTMENT_MOCKS ? MOCK_INVESTOR_PREFERENCES : undefined);
+
   // Fetch swipe opportunities from API
-  const { data: opportunities = [], isLoading: opportunitiesLoading, error: opportunitiesError } = useQuery<InvestmentOpportunity[]>({
-    queryKey: ["/api/swipe-opportunities"]
+  const {
+    data: fetchedOpportunities = [],
+    isLoading: remoteOpportunitiesLoading,
+    error: remoteOpportunitiesError,
+  } = useQuery<InvestmentOpportunity[]>({
+    queryKey: ["/api/swipe-opportunities"],
+    enabled: !inDemoMode,
+    retry: ENABLE_INVESTMENT_MOCKS ? 0 : 1,
+    queryFn: async () => {
+      const response = await fetch("/api/swipe-opportunities");
+      if (!response.ok) {
+        throw new Error(`Failed to load opportunities (${response.status})`);
+      }
+      const data = await response.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        if (ENABLE_INVESTMENT_MOCKS) {
+          return MOCK_OPPORTUNITIES;
+        }
+        return [];
+      }
+      return data;
+    },
   });
+
+  const shouldUseMockOpportunities =
+    inDemoMode || (!!remoteOpportunitiesError && ENABLE_INVESTMENT_MOCKS);
+  const opportunities = shouldUseMockOpportunities
+    ? MOCK_OPPORTUNITIES
+    : fetchedOpportunities;
+  const opportunitiesLoading = shouldUseMockOpportunities
+    ? false
+    : remoteOpportunitiesLoading;
+  const opportunitiesError = shouldUseMockOpportunities
+    ? null
+    : remoteOpportunitiesError;
+
+  const canTransact = !!account?.address;
 
   // Investment mutation for instant funding (up swipe)
   const investMutation = useMutation({
@@ -121,8 +226,9 @@ export default function SwipeInvesting() {
       });
     },
     onSuccess: (_, { opportunity, amount }) => {
-      const currencySymbol = preferences?.preferredCurrency === 'ETH' ? 'Ξ' : 
-                          preferences?.preferredCurrency === 'BTC' ? '₿' : '$';
+      const currencySymbol = resolveCurrencySymbol(
+        preferences?.preferredCurrency,
+      );
       toast({
         title: "🚀 Instant Investment Successful!",
         description: `Invested ${currencySymbol}${amount} in ${opportunity.title}`,
@@ -266,24 +372,36 @@ export default function SwipeInvesting() {
   };
 
   const handleQuickAddToCart = (opportunity: InvestmentOpportunity, amount: number) => {
+    const currency = preferences?.preferredCurrency || "USD";
+    const symbol = resolveCurrencySymbol(currency);
+
     addItem({
       targetType: opportunity.type,
       targetId: opportunity.id,
       targetName: opportunity.title,
       amount: amount.toString(),
-      currency: "USD",
-      description: opportunity.description
+      currency,
+      description: opportunity.description,
     });
     
     toast({
       title: "🛒 Added to Cart!",
-      description: `$${amount.toLocaleString()} investment in ${opportunity.title}`,
+      description: `${symbol}${amount.toLocaleString()} investment in ${opportunity.title}`,
     });
     
     setShowAmountModal(false);
   };
 
   const handleUpSwipe = (opportunity: InvestmentOpportunity) => {
+    if (!canTransact) {
+      toast({
+        title: "Demo Mode",
+        description: "Connect your wallet to invest instantly.",
+      });
+      resetCard();
+      return;
+    }
+
     const amount = preferences?.defaultAmount || "100";
     investMutation.mutate({ opportunity, amount });
     resetCard();
@@ -292,18 +410,21 @@ export default function SwipeInvesting() {
   const handleAddToCart = () => {
     if (!selectedOpportunity || !selectedAmount) return;
     
+    const currency = preferences?.preferredCurrency || "ETH";
+    const symbol = resolveCurrencySymbol(currency);
+
     addItem({
       targetType: selectedOpportunity.type,
       targetId: selectedOpportunity.id,
       targetName: selectedOpportunity.title,
       amount: selectedAmount,
-      currency: preferences?.preferredCurrency || "ETH",
-      description: selectedOpportunity.description
+      currency,
+      description: selectedOpportunity.description,
     });
     
     toast({
       title: "🛒 Added to Cart",
-      description: `${selectedOpportunity.title} added with ${preferences?.preferredCurrency === 'ETH' ? 'Ξ' : '$'}${selectedAmount}`,
+      description: `${selectedOpportunity.title} added with ${symbol}${selectedAmount}`,
     });
     
     setShowAmountModal(false);
@@ -341,7 +462,7 @@ export default function SwipeInvesting() {
     }
   };
 
-  if (!account?.address) {
+  if (!canTransact && !shouldUseMockOpportunities) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center p-8">

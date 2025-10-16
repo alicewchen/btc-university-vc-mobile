@@ -1,9 +1,15 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from '../screens/HomeScreen';
-import ExploreScreen from '../screens/ExploreScreen';
-import CreateDAOScreen from '../screens/CreateDAOScreen';
-import WalletScreen from '../screens/WalletScreen';
+import SwipeInvestingScreen from '@/screens/SwipeInvestingScreen';
+import InvestorDashboardScreen from '@/screens/InvestorDashboardScreen';
+import ShoppingCartScreen from '@/screens/ShoppingCartScreen';
+import InvestorProfileScreen from '@/screens/InvestorProfileScreen';
+import {
+  Heart,
+  LineChart,
+  ShoppingCart,
+  User,
+  HelpCircle,
+} from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 
@@ -12,52 +18,54 @@ export default function BottomTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          const iconProps = { color, size, strokeWidth: focused ? 2.4 : 2 };
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Explore') {
-            iconName = focused ? 'search' : 'search-outline';
-          } else if (route.name === 'Create') {
-            iconName = focused ? 'add-circle' : 'add-circle-outline';
-          } else if (route.name === 'Wallet') {
-            iconName = focused ? 'wallet' : 'wallet-outline';
-          } else {
-            iconName = 'help-circle-outline';
+          switch (route.name) {
+            case 'Discover':
+              return <Heart {...iconProps} />;
+            case 'Portfolio':
+              return <LineChart {...iconProps} />;
+            case 'Cart':
+              return <ShoppingCart {...iconProps} />;
+            case 'Profile':
+              return <User {...iconProps} />;
+            default:
+              return <HelpCircle {...iconProps} />;
           }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#F97316',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+        },
         headerStyle: {
-          backgroundColor: '#FF6B35',
+          backgroundColor: '#FFFFFF',
         },
-        headerTintColor: '#fff',
+        headerTintColor: '#111827',
         headerTitleStyle: {
           fontWeight: 'bold',
         },
       })}
     >
       <Tab.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{ title: 'Ethereum Nature Reserve' }}
+        name="Discover" 
+        component={SwipeInvestingScreen}
+        options={{ title: 'Discover Opportunities' }}
       />
       <Tab.Screen 
-        name="Explore" 
-        component={ExploreScreen}
-        options={{ title: 'Explore DAOs' }}
+        name="Portfolio" 
+        component={InvestorDashboardScreen}
+        options={{ title: 'Portfolio' }}
       />
       <Tab.Screen 
-        name="Create" 
-        component={CreateDAOScreen}
-        options={{ title: 'Create DAO' }}
+        name="Cart" 
+        component={ShoppingCartScreen}
+        options={{ title: 'Shopping Cart' }}
       />
       <Tab.Screen 
-        name="Wallet" 
-        component={WalletScreen}
-        options={{ title: 'Wallet' }}
+        name="Profile" 
+        component={InvestorProfileScreen}
+        options={{ title: 'Investor Profile' }}
       />
     </Tab.Navigator>
   );
