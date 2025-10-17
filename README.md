@@ -1,4 +1,4 @@
-# Bitcoin University — Investor Mobile Mobile App
+# Bitcoin University — Investor Mobile App
 
 A React Native (Expo) mobile app for Bitcoin University — Investor, a demo investor / NFT research DAO marketplace app. This repo contains the mobile client for the Bitcoin University - Investor project. The app is built with Expo and React Native, uses React Navigation, React Query, and a small on-device wallet/solana integration.
 
