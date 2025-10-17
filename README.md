@@ -4,9 +4,11 @@ A React Native (Expo) mobile app for Bitcoin University — Investor, a demo inv
 
 ## Demo
 
+
 Below is a small GIF preview intended for the README. The repository does not contain the generated GIF by default to avoid large diffs. You can generate it locally and then commit it to `mobile/assets/demo-preview.gif`.
 
-![Demo preview](mobile/assets/demo-preview.gif)
+<img src="mobile/assets/demo-preview.gif" alt="Demo preview" width="360" />
+
 
 To generate the GIF locally (requires curl, ffmpeg, and optionally gifsicle), run the helper script included in `mobile/scripts`:
 
@@ -85,9 +87,3 @@ To produce fresh native builds, use EAS (Expo Application Services) or run the n
 Authored by the Bitcoin University team. Mobile client maintained in this monorepo under `/mobile`.
 
 ---
-
-If you'd like, I can also:
-- Add a local copy of the demo video to `mobile/assets/` and reference it in a simple demo screen.
-- Create a short GIF or web-friendly preview for the README.
-
-Let me know which option you'd like next.
