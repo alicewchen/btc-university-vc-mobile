@@ -1,22 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type Currency = 'ETH' | 'USDC' | 'DAI';
+export type Currency = 'SOL' | 'USDC' | 'USDT';
 
 const STORAGE_KEY = '@btc_university_currency';
+const SUPPORTED_CURRENCIES: Currency[] = ['SOL', 'USDC', 'USDT'];
+
+const isSupportedCurrency = (value: string | null): value is Currency =>
+  !!value && SUPPORTED_CURRENCIES.includes(value as Currency);
 
 export function useCurrencyPreference() {
-  const [currency, setCurrencyState] = useState<Currency>('ETH');
+  const [currency, setCurrencyState] = useState<Currency>('SOL');
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     AsyncStorage.getItem(STORAGE_KEY)
       .then((stored) => {
-        if (stored && ['ETH', 'USDC', 'DAI'].includes(stored)) {
-          if (isMounted) {
-            setCurrencyState(stored as Currency);
-          }
+        if (isMounted && isSupportedCurrency(stored)) {
+          setCurrencyState(stored);
         }
       })
       .finally(() => {

@@ -1,14 +1,13 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Card, Text, Button, List } from 'react-native-paper';
-import { ConnectButton, bitcoinUniversityTheme, client, wallets } from '@/lib/thirdweb';
-import { useActiveAccount } from 'thirdweb/react';
+import { ConnectButton, useActiveAccount } from '@/lib/solanaWallet';
 import { CheckCircle, Download, Shield, Wallet } from 'lucide-react-native';
 
 const STEP_ITEMS = [
   {
     icon: Download,
     title: 'Install a wallet',
-    description: 'Download MetaMask, Coinbase Wallet, or use the built-in in-app wallet.',
+    description: 'Download Phantom, Solflare, Backpack, or use the built-in mock wallet.',
   },
   {
     icon: Shield,
@@ -20,7 +19,7 @@ const STEP_ITEMS = [
     icon: Wallet,
     title: 'Connect to Bitcoin University',
     description:
-      'Use the connect button below to link your wallet and start exploring investments.',
+      'Use the connect button below to link your Solana wallet and start exploring investments.',
   },
 ] as const;
 
@@ -61,19 +60,19 @@ export default function WalletOnboardingScreen() {
         />
         <Card.Content>
           <List.Item
-            title="In-App Wallet"
-            description="Fastest option. Use email or social login to create a wallet backed by a smart account."
-            left={() => <List.Icon icon="account" />}
+            title="Phantom"
+            description="Popular Solana wallet across mobile and desktop. Great developer ecosystem."
+            left={() => <List.Icon icon="ghost" />}
           />
           <List.Item
-            title="MetaMask"
-            description="Popular browser extension and mobile wallet. Supports testnets and hardware wallets."
-            left={() => <List.Icon icon="alpha-m-circle-outline" />}
+            title="Solflare"
+            description="Long-standing Solana wallet with hardware wallet support and staking integrations."
+            left={() => <List.Icon icon="white-balance-sunny" />}
           />
           <List.Item
-            title="Coinbase Wallet"
-            description="Great mobile-first wallet with deep Coinbase integration and multi-chain support."
-            left={() => <List.Icon icon="currency-eth" />}
+            title="Backpack"
+            description="All-in-one wallet with xNFT support and integrated Solana dev tooling."
+            left={() => <List.Icon icon="bag-personal" />}
           />
         </Card.Content>
       </Card>
@@ -88,11 +87,7 @@ export default function WalletOnboardingScreen() {
               ? 'Wallet connected. You are ready to invest!'
               : 'Connect now to access investment opportunities, leaderboards, and portfolio tracking.'}
           </Text>
-          <ConnectButton
-            client={client}
-            wallets={wallets}
-            theme={bitcoinUniversityTheme}
-          />
+          <ConnectButton />
           {account?.address ? (
             <View style={styles.successRow}>
               <CheckCircle size={20} color="#22C55E" />

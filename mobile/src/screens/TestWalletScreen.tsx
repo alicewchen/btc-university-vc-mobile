@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Card, Text, Button, Chip, HelperText } from 'react-native-paper';
-import { useActiveAccount, useActiveWallet, useConnect } from 'thirdweb/react';
-import { inAppWallet } from 'thirdweb/wallets';
+import {
+  useActiveAccount,
+  useSolanaWallet,
+  useConnect,
+  useDisconnect,
+} from '@/lib/solanaWallet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { client } from '@/lib/thirdweb';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, TestTube, User } from 'lucide-react-native';
 
@@ -12,29 +15,29 @@ const TEST_ACCOUNTS = [
   {
     id: 'test-user-1',
     name: 'Test Investor Alice',
-    address: '0xea28C6D767F3E203Ef4de0379086d81c5CcecFF0',
-    balance: '1000.0',
-    description: 'Heavy DeFi investor focused on biotechnology and climate tech',
+    address: '2yJ1N9ze2vfsonMSKcwkbeGU8ZndKyGKoU9p24XS5PBP',
+    balance: '1250.0',
+    description: 'Active Solana ecosystem investor focused on climate tech and regenerative finance',
     riskTolerance: 'moderate',
     investmentPreferences: ['Biotechnology', 'Climate Tech', 'DeFi'],
   },
   {
     id: 'test-user-2',
     name: 'Test Investor Bob',
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    balance: '10000.0',
-    description: 'Crypto whale interested in AI safety and quantum computing research',
+    address: '8pkDGpTe3nyY5hFNjMagsyN4m3Cs8dUdu7Nc7xCgQNgH',
+    balance: '9800.0',
+    description: 'Crypto whale interested in AI safety, DePIN, and zero-knowledge research',
     riskTolerance: 'high',
-    investmentPreferences: ['AI Safety', 'Quantum Computing', 'Space Technology'],
+    investmentPreferences: ['AI Safety', 'DePIN', 'Zero Knowledge'],
   },
   {
     id: 'test-user-3',
     name: 'Test Investor Carol',
-    address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-    balance: '500.0',
-    description: 'Conservative investor focused on sustainable agriculture',
+    address: '5Qgnxf2Vb2cib1oC6H1VSM8bW4QbZ8iWJSy9g1roPa7R',
+    balance: '480.0',
+    description: 'Conservative investor focused on sustainable agriculture and women-led teams',
     riskTolerance: 'low',
-    investmentPreferences: ['Agriculture', 'Sustainability', 'Ocean Conservation'],
+    investmentPreferences: ['Agriculture', 'Sustainability', 'Women in Web3'],
   },
 ] as const;
 
@@ -45,8 +48,9 @@ const TEST_WALLET_STORAGE_KEY = '@btc_university_test_wallet';
 
 export default function TestWalletScreen() {
   const account = useActiveAccount();
-  const wallet = useActiveWallet();
-  const { connect } = useConnect();
+  const { isMockConnection } = useSolanaWallet();
+  const { connect, isConnecting: isGlobalConnecting } = useConnect();
+  const { disconnect } = useDisconnect();
   const { toast } = useToast();
 
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
@@ -75,14 +79,10 @@ export default function TestWalletScreen() {
       await AsyncStorage.setItem(TEST_USER_STORAGE_KEY, JSON.stringify(testAccount));
       await AsyncStorage.setItem(TEST_WALLET_STORAGE_KEY, testAccount.address);
 
-      const walletInstance = inAppWallet();
-      await connect(async () => {
-        await walletInstance.connect({
-          client,
-          strategy: 'jwt',
-          jwt: `test-jwt-${testAccount.id}`,
-        });
-        return walletInstance;
+      await connect({
+        type: 'mock',
+        address: testAccount.address,
+        label: testAccount.name,
       });
 
       setStoredAccount(testAccount);
@@ -110,10 +110,11 @@ export default function TestWalletScreen() {
     setStoredAccount(null);
     await AsyncStorage.removeItem(TEST_USER_STORAGE_KEY);
     await AsyncStorage.removeItem(TEST_WALLET_STORAGE_KEY);
+    await disconnect();
     toast({ title: 'Test session cleared' });
   };
 
-  const isRealWalletConnected = Boolean(wallet && account?.address);
+  const isRealWalletConnected = Boolean(account && !isMockConnection);
   const accountAddress = account?.address ?? '';
 
   return (
@@ -144,7 +145,7 @@ export default function TestWalletScreen() {
               ✅ Real wallet connected: {accountAddress ? `${accountAddress.slice(0, 6)}...${accountAddress.slice(-4)}` : 'Active session'}
             </Text>
             <Text variant="bodySmall" style={styles.noticeHint}>
-              Test accounts are disabled while a real wallet is connected.
+              Test accounts are disabled while a real or generated wallet is connected.
             </Text>
           </Card.Content>
         </Card>
@@ -159,7 +160,7 @@ export default function TestWalletScreen() {
                 Active Test Session: {storedAccount.name}
               </Text>
               <Text variant="bodySmall" style={styles.noticeHint}>
-                {storedAccount.address.slice(0, 10)}... ({storedAccount.balance} ETH)
+                {storedAccount.address.slice(0, 10)}... ({storedAccount.balance} SOL)
               </Text>
             </View>
             <Button mode="text" onPress={handleLogout}>
@@ -192,7 +193,7 @@ export default function TestWalletScreen() {
                   <Text variant="bodySmall">
                     Address: {testAccount.address.slice(0, 10)}...
                   </Text>
-                  <Text variant="bodySmall">Balance: {testAccount.balance} ETH</Text>
+                  <Text variant="bodySmall">Balance: {testAccount.balance} SOL</Text>
                 </View>
                 <View style={styles.preferenceRow}>
                   {testAccount.investmentPreferences.map((pref) => (
@@ -204,7 +205,7 @@ export default function TestWalletScreen() {
                 <Button
                   mode={isSelected ? 'outlined' : 'contained'}
                   disabled={isRealWalletConnected}
-                  loading={isConnecting && selectedAccount === testAccount.id}
+                  loading={(isConnecting || isGlobalConnecting) && selectedAccount === testAccount.id}
                   onPress={() =>
                     isSelected ? handleLogout() : handleTestLogin(testAccount)
                   }

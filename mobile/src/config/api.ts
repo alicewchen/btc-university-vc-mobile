@@ -14,6 +14,11 @@ import { Platform } from 'react-native';
  * EXPO_PUBLIC_API_URL=https://your-repl.replit.dev
  */
 
+const MOCK_API_BASE_URL = 'https://mock-api.bitcoinuniversity.local';
+const ENABLE_MOCK_API =
+  process.env.EXPO_PUBLIC_ENABLE_API_MOCKS === 'true' ||
+  process.env.EXPO_PUBLIC_ENABLE_INVESTMENT_MOCKS !== 'false';
+
 const getApiBaseUrl = () => {
   if (__DEV__) {
     // Priority 1: Explicit environment variable (REQUIRED for physical devices)
@@ -21,6 +26,14 @@ const getApiBaseUrl = () => {
     if (envUrl) {
       console.log('[API Config] Using environment URL:', envUrl);
       return envUrl;
+    }
+    
+    if (ENABLE_MOCK_API) {
+      console.warn(
+        '[API Config] EXPO_PUBLIC_API_URL not provided; falling back to mock API in dev mode at:',
+        MOCK_API_BASE_URL,
+      );
+      return MOCK_API_BASE_URL;
     }
     
     // Check if we're running in Expo Go (has debuggerHost or manifest hostUri)
@@ -71,7 +84,18 @@ const getApiBaseUrl = () => {
   // Production: Use environment variable or throw error
   const prodUrl = process.env.EXPO_PUBLIC_API_URL;
   if (!prodUrl) {
-    throw new Error('EXPO_PUBLIC_API_URL is required in production. Please set this environment variable.');
+    if (ENABLE_MOCK_API) {
+      console.warn(
+        '[API Config] EXPO_PUBLIC_API_URL was not provided in production. Falling back to mock API mode at:',
+        MOCK_API_BASE_URL,
+      );
+      return MOCK_API_BASE_URL;
+    }
+    console.warn(
+      '[API Config] Missing EXPO_PUBLIC_API_URL in production build and mock API disabled. Using fallback mock endpoint:',
+      MOCK_API_BASE_URL,
+    );
+    return MOCK_API_BASE_URL;
   }
   
   console.log('[API Config] Using production URL:', prodUrl);

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount } from '@/lib/solanaWallet';
 
 export interface CartItem {
   id: string;

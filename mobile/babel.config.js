@@ -12,6 +12,7 @@ module.exports = function (api) {
             'expo-linking': './src/shims/expo-linking',
             '@coinbase/wallet-mobile-sdk': './src/shims/coinbase-wallet-mobile-sdk',
             '@coinbase/wallet-mobile-sdk/*': './src/shims/coinbase-wallet-mobile-sdk/*',
+            '@aws-sdk/client-kms': './src/shims/aws-sdk-client-kms',
           },
         },
       ],

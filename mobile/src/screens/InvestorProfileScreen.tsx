@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useActiveAccount, useActiveWallet, useDisconnect } from 'thirdweb/react';
 import {
   Avatar,
   Button,
@@ -18,6 +17,11 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/api';
 import { signAuthMessage } from '@/lib/auth';
 import { useCurrencyPreference, Currency } from '@/hooks/useCurrencyPreference';
+import {
+  useActiveAccount,
+  useSolanaWallet,
+  useDisconnect,
+} from '@/lib/solanaWallet';
 import {
   ArrowUpRight,
   Copy,
@@ -69,9 +73,11 @@ interface LeaderboardEntry {
 const abbreviateAddress = (address?: string | null) =>
   address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '—';
 
+const SOLANA_CURRENCIES: Currency[] = ['SOL', 'USDC', 'USDT'];
+
 export default function InvestorProfileScreen() {
   const account = useActiveAccount();
-  const wallet = useActiveWallet();
+  const { isMockConnection } = useSolanaWallet();
   const { disconnect } = useDisconnect();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -177,7 +183,11 @@ export default function InvestorProfileScreen() {
     if (preferences) {
       setSelectedTier(preferences.quickFundRange);
       setAutoInvestEnabled(preferences.autoInvestEnabled);
-      setCurrency(preferences.preferredCurrency as Currency);
+      if (SOLANA_CURRENCIES.includes(preferences.preferredCurrency as Currency)) {
+        setCurrency(preferences.preferredCurrency as Currency);
+      } else {
+        setCurrency('SOL');
+      }
     }
   }, [preferences, setCurrency]);
 
@@ -190,7 +200,11 @@ export default function InvestorProfileScreen() {
     if (preferences) {
       setSelectedTier(preferences.quickFundRange);
       setAutoInvestEnabled(preferences.autoInvestEnabled);
-      setCurrency(preferences.preferredCurrency as Currency);
+      if (SOLANA_CURRENCIES.includes(preferences.preferredCurrency as Currency)) {
+        setCurrency(preferences.preferredCurrency as Currency);
+      } else {
+        setCurrency('SOL');
+      }
     } else {
       setSelectedTier('individual_supporter');
       setAutoInvestEnabled(false);
@@ -224,14 +238,14 @@ export default function InvestorProfileScreen() {
   };
 
   const handleDisconnect = async () => {
-    if (!wallet) {
+    if (!account) {
       toast({
         title: 'No wallet connected',
         description: 'Connect a wallet before attempting to disconnect.',
       });
       return;
     }
-    await disconnect(wallet);
+    await disconnect();
     toast({ title: 'Wallet disconnected' });
   };
 
@@ -412,7 +426,13 @@ export default function InvestorProfileScreen() {
           <Card.Content>
             <List.Item
               title="Wallet Connection"
-              description={wallet ? 'Active' : 'Not connected'}
+              description={
+                account
+                  ? isMockConnection
+                    ? 'Demo wallet connected'
+                    : 'Solana wallet connected'
+                  : 'Not connected'
+              }
               left={() => <List.Icon icon="wallet" />}
               right={() => (
                 <Button
@@ -452,7 +472,7 @@ export default function InvestorProfileScreen() {
               Preferred Currency
             </Text>
             <View style={styles.currencyRow}>
-              {(['ETH', 'USDC', 'DAI'] as Currency[]).map((option) => (
+              {SOLANA_CURRENCIES.map((option) => (
                 <Button
                   key={option}
                   mode={currency === option ? 'contained' : 'outlined'}

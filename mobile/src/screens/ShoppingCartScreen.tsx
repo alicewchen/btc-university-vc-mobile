@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { useActiveAccount } from 'thirdweb/react';
 import { Button, Card, Dialog, IconButton, List, Portal, Text, TextInput } from 'react-native-paper';
 import { useShoppingCart } from '@/contexts/ShoppingCartContext';
-import { useThirdwebBatch } from '@/hooks/useThirdwebBatch';
+import { useSolanaBatch } from '@/hooks/useSolanaBatch';
 import { useToast } from '@/hooks/use-toast';
-import { ConnectButton, bitcoinUniversityTheme, client, wallets } from '@/lib/thirdweb';
+import { ConnectButton, useActiveAccount } from '@/lib/solanaWallet';
 import {
   ArrowLeft,
   Check,
@@ -46,7 +45,7 @@ export default function ShoppingCartScreen() {
   const { toast } = useToast();
   const { items, removeItem, updateItemAmount, clearCart, getTotalAmount, getTotalItems } =
     useShoppingCart();
-  const { processBatch, isBatchProcessing } = useThirdwebBatch();
+  const { processBatch, isBatchProcessing } = useSolanaBatch();
 
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState('');
@@ -125,11 +124,7 @@ export default function ShoppingCartScreen() {
             <Text variant="bodyMedium" style={styles.centerMessage}>
               Connect your wallet to view your cart and make investments.
             </Text>
-            <ConnectButton
-              client={client}
-              wallets={wallets}
-              theme={bitcoinUniversityTheme}
-            />
+            <ConnectButton />
           </Card.Content>
         </Card>
       </View>

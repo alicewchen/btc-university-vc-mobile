@@ -13,12 +13,11 @@ import {
   useTheme,
 } from 'react-native-paper';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useActiveAccount } from 'thirdweb/react';
 import { useShoppingCart } from '@/contexts/ShoppingCartContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, fetchJson } from '@/lib/api';
 import { signAuthMessage } from '@/lib/auth';
-import { ConnectButton, client, wallets, bitcoinUniversityTheme } from '@/lib/thirdweb';
+import { ConnectButton, useActiveAccount } from '@/lib/solanaWallet';
 import {
   ArrowUp,
   DollarSign,
@@ -143,7 +142,7 @@ const MOCK_OPPORTUNITIES: InvestmentOpportunity[] = [
 ];
 
 const resolveCurrencySymbol = (currency?: string) => {
-  if (currency === 'ETH') return 'Ξ';
+  if (currency === 'SOL') return 'SOL ';
   if (currency === 'BTC') return '₿';
   return '$';
 };
@@ -518,11 +517,7 @@ export default function SwipeInvestingScreen() {
             <Text variant="bodyMedium" style={styles.loadingSubtitle}>
               Connect your wallet to start swiping through investment opportunities
             </Text>
-            <ConnectButton
-              client={client}
-              wallets={wallets}
-              theme={bitcoinUniversityTheme}
-            />
+            <ConnectButton />
           </Card.Content>
         </Card>
       </LinearGradient>

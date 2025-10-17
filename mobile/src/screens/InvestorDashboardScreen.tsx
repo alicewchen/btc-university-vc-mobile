@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useActiveAccount } from 'thirdweb/react';
 import {
   Card,
   Text,
@@ -13,8 +12,8 @@ import {
 } from 'react-native-paper';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/api';
-import { useBlockchainInvestments } from '@/hooks/useBlockchainInvestments';
-import { ConnectButton, bitcoinUniversityTheme, client, wallets } from '@/lib/thirdweb';
+import { useSolanaInvestments } from '@/hooks/useSolanaInvestments';
+import { ConnectButton, useActiveAccount } from '@/lib/solanaWallet';
 import {
   Activity,
   ArrowDownRight,
@@ -53,7 +52,7 @@ interface Investment {
 
 const formatAmount = (amount: string | number, currency: string = 'USD') => {
   const numeric = typeof amount === 'string' ? parseFloat(amount) : amount;
-  const symbol = currency === 'ETH' ? 'Ξ' : '$';
+  const symbol = currency === 'SOL' ? 'SOL ' : '$';
 
   if (numeric >= 1_000_000) {
     return `${symbol}${(numeric / 1_000_000).toFixed(1)}M`;
@@ -74,7 +73,7 @@ export default function InvestorDashboardScreen() {
     isLoading: blockchainLoading,
     refresh: refreshBlockchain,
     isDemo,
-  } = useBlockchainInvestments();
+  } = useSolanaInvestments();
 
   const {
     data: profile,
@@ -110,7 +109,7 @@ export default function InvestorDashboardScreen() {
       const duplicate = Array.from(map.values()).find(
         (existing) =>
           existing.targetId === chainInvestment.target_id &&
-          existing.currency === 'ETH' &&
+          existing.currency === 'SOL' &&
           Math.abs(parseFloat(existing.amount) - parseFloat(chainInvestment.amount)) < 0.001,
       );
 
@@ -121,7 +120,7 @@ export default function InvestorDashboardScreen() {
           targetName: chainInvestment.target_name,
           targetType: chainInvestment.target_type as Investment['targetType'],
           amount: chainInvestment.amount,
-          currency: 'ETH',
+          currency: 'SOL',
           createdAt: chainInvestment.date,
           status: 'confirmed',
           source: 'blockchain',
@@ -140,16 +139,16 @@ export default function InvestorDashboardScreen() {
 
   const portfolioStats = useMemo(() => {
     const usdInvestments = investments.filter((inv) => inv.currency === 'USD');
-    const ethInvestments = investments.filter((inv) => inv.currency === 'ETH');
+    const solInvestments = investments.filter((inv) => inv.currency === 'SOL');
 
     const totalUSD = usdInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-    const totalETH = ethInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    const totalSOL = solInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
 
     const usdReturns = usdInvestments.reduce(
       (sum, inv) => sum + (inv.returns ?? 0),
       0,
     );
-    const ethReturns = ethInvestments.reduce(
+    const solReturns = solInvestments.reduce(
       (sum, inv) => sum + (inv.returns ?? 0),
       0,
     );
@@ -167,9 +166,9 @@ export default function InvestorDashboardScreen() {
 
     return {
       totalUSD,
-      totalETH,
+      totalSOL,
       usdReturns,
-      ethReturns,
+      solReturns,
       averagePerformance,
       topPerformer,
     };
@@ -208,11 +207,7 @@ export default function InvestorDashboardScreen() {
             <Text variant="bodyMedium" style={styles.centerMessage}>
               Connect your wallet to view personalized portfolio analytics and investment history.
             </Text>
-            <ConnectButton
-              client={client}
-              wallets={wallets}
-              theme={bitcoinUniversityTheme}
-            />
+            <ConnectButton />
           </Card.Content>
         </Card>
       </View>
@@ -251,7 +246,7 @@ export default function InvestorDashboardScreen() {
                 {formatAmount(portfolioStats.totalUSD, 'USD')}
               </Text>
               <Text variant="bodyMedium" style={styles.heroSubtext}>
-                {formatAmount(portfolioStats.totalETH, 'ETH')} in on-chain assets
+                {formatAmount(portfolioStats.totalSOL, 'SOL')} in on-chain assets
               </Text>
               <Chip icon={() => <TrendingUp size={16} color="#F97316" />} style={styles.heroChip}>
                 {investments.length} investments •{' '}
@@ -279,10 +274,10 @@ export default function InvestorDashboardScreen() {
               <Card.Content>
                 <View style={styles.metricHeader}>
                   <ArrowUpRight size={20} color="#22C55E" />
-                  <Text variant="labelMedium">ETH Returns</Text>
+                <Text variant="labelMedium">SOL Returns</Text>
                 </View>
                 <Text variant="titleLarge" style={styles.metricValue}>
-                  {formatAmount(portfolioStats.ethReturns, 'ETH')}
+                  {formatAmount(portfolioStats.solReturns, 'SOL')}
                 </Text>
                 <Text variant="bodySmall" style={styles.metricHint}>
                   Blockchain-confirmed rewards

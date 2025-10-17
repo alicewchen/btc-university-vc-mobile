@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from '@/navigation/RootNavigator';
 import { theme } from '@/config/theme';
 import { queryClient } from '@/config/queryClient';
-import { ThirdwebProvider } from '@/lib/thirdweb';
+import { SolanaWalletProvider } from '@/lib/solanaWallet';
 import { ShoppingCartProvider } from '@/contexts/ShoppingCartContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 
@@ -24,7 +24,7 @@ const paperProviderSettings = {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ThirdwebProvider>
+      <SolanaWalletProvider>
         <QueryClientProvider client={queryClient}>
           <PaperProvider theme={theme} settings={paperProviderSettings}>
             <ShoppingCartProvider>
@@ -35,7 +35,7 @@ export default function App() {
             </ShoppingCartProvider>
           </PaperProvider>
         </QueryClientProvider>
-      </ThirdwebProvider>
+      </SolanaWalletProvider>
     </SafeAreaProvider>
   );
 }
